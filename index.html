@@ -2,46 +2,826 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>IPM Sports Grading</title>
-  <style>
-    body {
-      background: #101827;
-      color: white;
-      font-family: Arial, sans-serif;
-      text-align: center;
-      padding: 40px 20px;
-    }
-    h1 { color: #55d6be; }
-    .card {
-      background: #202d42;
-      border-radius: 16px;
-      padding: 20px;
-      margin: 15px auto;
-      max-width: 400px;
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#090d17">
+<meta name="description" content="IPM Sports Grading — community-driven athletic ratings for intensity, precision and movement.">
+<title>IPM Sports Grading | Rate the Game</title>
+
+<style>
+:root {
+  --bg:#090d17;
+  --panel:#121927;
+  --panel2:#192236;
+  --line:#2a3548;
+  --text:#eef4ff;
+  --muted:#98a8bf;
+  --mint:#5de6c4;
+  --red:#ff6d7a;
+  --green:#5de6a4;
+  --blue:#7ca9ff;
+}
+* { box-sizing:border-box; }
+html { scroll-behavior:smooth; }
+body {
+  margin:0;
+  color:var(--text);
+  background:
+    radial-gradient(ellipse at 80% 0%,#23305555,transparent 38%),
+    radial-gradient(ellipse at 5% 25%,#123b3655,transparent 38%),
+    var(--bg);
+  font-family:Inter,system-ui,-apple-system,Segoe UI,sans-serif;
+  line-height:1.5;
+  min-height:100vh;
+}
+button,input,select,textarea { font:inherit; }
+button { cursor:pointer; }
+button:disabled { opacity:.5;cursor:not-allowed; }
+a { color:inherit;text-decoration:none; }
+button:focus-visible,a:focus-visible,input:focus-visible,
+select:focus-visible,textarea:focus-visible {
+  outline:3px solid var(--mint);outline-offset:3px;
+}
+.container { max-width:1210px;margin:auto;padding:0 22px; }
+header {
+  position:sticky;top:0;z-index:20;
+  background:#090d17e8;
+  border-bottom:1px solid #ffffff16;
+  backdrop-filter:blur(16px);
+}
+nav {
+  display:flex;align-items:center;justify-content:space-between;
+  min-height:76px;gap:15px;
+}
+.brand { display:flex;align-items:center;gap:12px;font-weight:900;letter-spacing:-.8px; }
+.brand-mark {
+  width:44px;height:44px;border-radius:13px;
+  display:grid;place-items:center;
+  color:#08130f;background:var(--mint);
+  font-size:17px;font-weight:1000;
+  box-shadow:0 0 25px #5de6c433;
+}
+.brand small { display:block;font-size:10px;letter-spacing:2.5px;color:var(--muted); }
+.links { display:flex;align-items:center;gap:26px; }
+.links a { color:var(--muted);font-size:14px; }
+.links a:hover { color:white; }
+.btn {
+  display:inline-flex;align-items:center;justify-content:center;
+  gap:8px;border:1px solid var(--line);
+  padding:12px 17px;border-radius:11px;
+  color:var(--text);background:var(--panel2);
+  font-weight:700;transition:transform .2s,background .2s;
+}
+.btn:hover:not(:disabled) { transform:translateY(-2px);background:#27354f; }
+.btn.primary { background:var(--mint);border-color:var(--mint);color:#08231d; }
+.btn.primary:hover { background:#9bf5dd; }
+.btn.small { padding:9px 13px;font-size:13px; }
+.btn.ghost { background:transparent; }
+.hero {
+  display:grid;grid-template-columns:1.1fr .9fr;
+  align-items:center;gap:42px;padding:78px 0 64px;
+}
+.eyebrow {
+  display:inline-flex;align-items:center;gap:9px;
+  font-size:12px;font-weight:900;letter-spacing:2px;
+  text-transform:uppercase;color:var(--mint);
+}
+.dot { width:7px;height:7px;border-radius:50%;background:var(--mint);box-shadow:0 0 12px var(--mint); }
+h1 {
+  font-size:clamp(46px,6vw,82px);
+  line-height:1.04;letter-spacing:-4px;
+  margin:17px 0 20px;font-weight:950;
+}
+h1 em {
+  display:block;font-style:normal;
+  background:linear-gradient(110deg,var(--mint),#81a9ff);
+  background-clip:text;color:transparent;
+}
+.hero p { max-width:560px;font-size:17px;color:var(--muted); }
+.hero-actions { display:flex;flex-wrap:wrap;gap:12px;margin-top:28px; }
+.hero-art {
+  min-height:325px;position:relative;overflow:hidden;
+  border:1px solid var(--line);border-radius:26px;
+  background:radial-gradient(circle at 50% 35%,#283653,#101725 70%);
+  display:flex;flex-direction:column;
+  align-items:center;justify-content:center;padding:30px;
+}
+.hero-art:before {
+  content:"";position:absolute;inset:0;opacity:.14;
+  background-image:linear-gradient(#a9c4ff 1px,transparent 1px),
+   linear-gradient(90deg,#a9c4ff 1px,transparent 1px);
+  background-size:32px 32px;
+  mask-image:radial-gradient(circle,black,transparent 78%);
+}
+.orb {
+  position:relative;width:195px;height:195px;
+  border-radius:50%;
+  background:conic-gradient(from 10deg,var(--red),var(--blue),var(--green),var(--red));
+  box-shadow:0 0 90px #6284ff33;
+  animation:float 6s ease-in-out infinite;
+}
+.orb:after {
+  content:"IPM";position:absolute;inset:24px;border-radius:50%;
+  background:#101725;display:grid;place-items:center;
+  color:white;font-weight:950;font-size:44px;letter-spacing:-3px;
+}
+.floating-tag {
+  position:absolute;z-index:2;background:#172237ee;
+  border:1px solid #3b4a62;border-radius:12px;
+  padding:11px 14px;font-weight:800;font-size:13px;
+  box-shadow:0 15px 30px #0005;
+}
+.tag1 { top:27px;left:22px;color:var(--red); }
+.tag2 { top:66px;right:16px;color:var(--green); }
+.tag3 { bottom:28px;right:35px;color:var(--blue); }
+@keyframes float { 50% { transform:translateY(-12px); } }
+.notice {
+  border:1px solid #6b6137;
+  border-radius:12px;padding:13px 17px;
+  background:#342e1b66;color:#ebdba0;font-size:13px;
+  margin-bottom:30px;
+}
+.notice.live { border-color:#286d5b;background:#103c3266;color:#a2f4d6; }
+.stats { display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:70px; }
+.stat {
+  background:linear-gradient(135deg,#1b2639,#111826);
+  padding:23px;border:1px solid var(--line);border-radius:17px;
+}
+.stat strong { display:block;font-size:33px;letter-spacing:-1.5px; }
+.stat span { font-size:13px;color:var(--muted); }
+.section-head {
+  display:flex;justify-content:space-between;align-items:end;
+  gap:15px;margin-bottom:24px;
+}
+.section-head h2 { font-size:clamp(28px,4vw,42px);letter-spacing:-1.5px;margin:7px 0; }
+.section-head p { margin:0;color:var(--muted); }
+.toolbar { display:flex;gap:12px;flex-wrap:wrap;margin-bottom:19px; }
+.field {
+  background:#141c2b;border:1px solid var(--line);
+  color:var(--text);padding:13px 15px;border-radius:11px;
+  outline:none;min-width:0;
+}
+.field:focus { border-color:var(--mint); }
+#search { flex:1;min-width:180px; }
+.chips { display:flex;flex-wrap:wrap;gap:8px;margin-bottom:24px; }
+.chip {
+  background:#151d2c;color:var(--muted);
+  border:1px solid var(--line);border-radius:50px;
+  padding:8px 13px;font-size:12px;font-weight:700;
+}
+.chip.active { color:#09241d;background:var(--mint);border-color:var(--mint); }
+.sport-grid { display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:17px; }
+.sport {
+  position:relative;overflow:hidden;
+  background:linear-gradient(155deg,#1b2537,#111827 65%);
+  border:1px solid var(--line);border-radius:20px;
+  padding:20px;transition:transform .2s,border-color .2s;
+}
+.sport:hover { transform:translateY(-4px);border-color:#50627d; }
+.sport:before {
+  content:"";position:absolute;top:-80px;right:-80px;
+  width:190px;height:190px;border-radius:50%;
+  background:var(--sport-color);filter:blur(90px);opacity:.22;
+  pointer-events:none;
+}
+.sport-top { display:flex;align-items:start;justify-content:space-between;gap:10px; }
+.sport-icon {
+  width:51px;height:51px;display:grid;place-items:center;
+  font-size:27px;background:#ffffff0e;border:1px solid #ffffff15;
+  border-radius:15px;
+}
+.pill {
+  border:1px solid #ffffff20;background:#ffffff0b;
+  color:var(--muted);font-size:11px;padding:6px 9px;
+  border-radius:50px;white-space:nowrap;
+}
+.sport h3 { font-size:20px;letter-spacing:-.5px;margin:18px 0 5px; }
+.category { color:var(--muted);font-size:12px; }
+.desc { color:var(--muted);font-size:13px;min-height:40px;margin:12px 0 17px; }
+.metric { display:grid;grid-template-columns:72px 1fr 24px;gap:8px;align-items:center;margin:12px 0; }
+.metric label { font-size:11px;color:#c4cddd; }
+.track { height:7px;border-radius:9px;background:#303b4e;overflow:hidden; }
+.track span { display:block;height:100%;border-radius:9px; }
+.metric b { text-align:right;font-size:12px; }
+.card-foot {
+  display:flex;align-items:center;justify-content:space-between;
+  gap:8px;margin-top:20px;border-top:1px solid var(--line);padding-top:16px;
+}
+.count { font-size:12px;color:var(--muted); }
+.actions { display:flex;gap:7px; }
+.empty {
+  padding:45px;text-align:center;color:var(--muted);
+  border:1px dashed var(--line);border-radius:15px;
+}
+.compare {
+  margin-top:25px;padding:22px;border:1px solid #3f645e;
+  background:linear-gradient(115deg,#142c2b,#161d2a);
+  border-radius:20px;
+}
+.compare h3 { margin-top:0; }
+.compare-grid { display:grid;grid-template-columns:1fr 1fr;gap:20px; }
+.compare-col { padding:17px;border-radius:14px;background:#ffffff08; }
+.compare-col h4 { margin:0 0 12px; }
+.how {
+  margin:85px 0 70px;padding:33px;
+  background:#121a29;border:1px solid var(--line);border-radius:24px;
+}
+.how-grid { display:grid;grid-template-columns:repeat(3,1fr);gap:15px; }
+.how-item { background:#ffffff07;border-radius:15px;padding:18px; }
+.how-item strong { font-size:18px; }
+.how-item p { font-size:13px;color:var(--muted); }
+.swatch { width:11px;height:11px;display:inline-block;border-radius:3px;margin-right:7px; }
+footer {
+  padding:30px 0 55px;border-top:1px solid var(--line);
+  color:var(--muted);font-size:13px;display:flex;
+  justify-content:space-between;gap:15px;flex-wrap:wrap;
+}
+dialog {
+  width:min(480px,calc(100vw - 30px));max-height:90vh;
+  overflow-y:auto;background:#172033;color:var(--text);
+  border:1px solid #40506b;border-radius:21px;padding:26px;
+  box-shadow:0 25px 100px #000a;
+}
+dialog::backdrop { background:#030711bd;backdrop-filter:blur(6px); }
+dialog h2 { margin:0 0 7px; }
+dialog p { color:var(--muted);font-size:13px; }
+.dialog-top { display:flex;justify-content:space-between;align-items:start;gap:12px; }
+.x { border:none;background:none;color:white;font-size:25px; }
+.rating { margin:24px 0; }
+.rating label { display:flex;justify-content:space-between;font-weight:700;margin-bottom:12px; }
+input[type=range] { width:100%;accent-color:var(--mint);cursor:pointer; }
+.form-label { font-size:13px;display:block;margin:17px 0 7px; }
+.full { width:100%; }
+textarea { min-height:95px;resize:vertical; }
+.toast {
+  position:fixed;bottom:22px;left:50%;transform:translateX(-50%);
+  z-index:50;background:#23354a;color:white;
+  padding:13px 20px;border:1px solid #55718a;border-radius:12px;
+  box-shadow:0 12px 40px #0008;max-width:90vw;
+}
+[hidden] { display:none!important; }
+@media(max-width:900px) {
+  .hero { grid-template-columns:1fr;padding-top:45px; }
+  .hero-art { min-height:270px; }
+  .sport-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
+}
+@media(max-width:600px) {
+  .links a { display:none; }
+  .container { padding:0 15px; }
+  h1 { letter-spacing:-2.5px; }
+  .hero { gap:20px; }
+  .hero-art { min-height:250px; }
+  .stats { gap:7px;margin-bottom:45px; }
+  .stat { padding:13px; }
+  .stat strong { font-size:25px; }
+  .sport-grid,.how-grid { grid-template-columns:1fr; }
+  .compare-grid { grid-template-columns:1fr; }
+  .sport { padding:18px; }
+  .section-head { align-items:start; }
+  .section-head .btn { font-size:12px;padding:9px; }
+  .how { padding:20px;margin-top:55px; }
+}
+@media(prefers-reduced-motion:reduce) {
+  *,*:before,*:after { animation:none!important;scroll-behavior:auto!important; }
+}
+</style>
 </head>
+
 <body>
-  <h1>IPM Sports Grading</h1>
-  <p>Redefining how we measure athleticism.</p>
+<header>
+  <nav class="container">
+    <a class="brand" href="#" aria-label="IPM home">
+      <span class="brand-mark">IPM</span>
+      <span>IPM SPORTS<small>COMMUNITY GRADING</small></span>
+    </a>
+    <div class="links">
+      <a href="#explore">Explore</a>
+      <a href="#how">The Scale</a>
+      <button class="btn primary small" id="suggestTop">+ Suggest Sport</button>
+    </div>
+  </nav>
+</header>
 
-  <div class="card">
-    <h2>I — Intensity</h2>
-    <p>How physically demanding is it?</p>
-  </div>
+<main class="container">
+  <section class="hero">
+    <div>
+      <span class="eyebrow"><span class="dot"></span> The athletic debate starts here</span>
+      <h1>EVERY SPORT.<em>THREE SCORES.</em></h1>
+      <p>Is esports really a sport? Is golf as demanding as football?
+      Stop arguing in circles. Compare activities by Intensity,
+      Precision and Movement — then let the community weigh in.</p>
+      <div class="hero-actions">
+        <a class="btn primary" href="#explore">Explore Rankings ↗</a>
+        <a class="btn ghost" href="#how">How IPM Works</a>
+      </div>
+    </div>
+    <div class="hero-art" aria-label="IPM color visualization">
+      <div class="floating-tag tag1">I · INTENSITY</div>
+      <div class="floating-tag tag2">P · PRECISION</div>
+      <div class="orb"></div>
+      <div class="floating-tag tag3">M · MOVEMENT</div>
+    </div>
+  </section>
 
-  <div class="card">
-    <h2>P — Precision</h2>
-    <p>How much physical accuracy is required?</p>
-  </div>
+  <div id="notice" class="notice" role="status"></div>
 
-  <div class="card">
-    <h2>M — Movement</h2>
-    <p>How much movement does it require?</p>
-  </div>
+  <section class="stats" aria-label="Community statistics">
+    <div class="stat"><strong id="statSports">0</strong><span>Rated sports</span></div>
+    <div class="stat"><strong id="statVotes">0</strong><span>Community ratings</span></div>
+    <div class="stat"><strong>3</strong><span>IPM dimensions</span></div>
+  </section>
 
-  <p>Every sport. Three measurements. One scale.</p>
+  <section id="explore">
+    <div class="section-head">
+      <div>
+        <span class="eyebrow">Community rankings</span>
+        <h2>Explore the sports</h2>
+        <p>Scores range from 0 to 10. Rate, compare and debate.</p>
+      </div>
+      <button class="btn small" id="refresh">↻ Refresh</button>
+    </div>
+
+    <div class="toolbar">
+      <input class="field" id="search" type="search"
+        placeholder="Search sports, games or categories..."
+        aria-label="Search sports">
+      <select class="field" id="sort" aria-label="Sort sports">
+        <option value="popular">Most community ratings</option>
+        <option value="overall">Highest overall IPM</option>
+        <option value="intensity">Highest intensity</option>
+        <option value="precision">Highest precision</option>
+        <option value="movement">Highest movement</option>
+        <option value="name">Alphabetical</option>
+      </select>
+    </div>
+
+    <div class="chips" id="filters" aria-label="Sport categories"></div>
+    <div id="sportGrid" class="sport-grid"></div>
+    <div id="empty" class="empty" hidden>
+      No matching sports. Try another search or suggest one!
+    </div>
+
+    <section id="comparePanel" class="compare" hidden
+      aria-label="Sport comparison">
+      <div class="section-head">
+        <div>
+          <span class="eyebrow">Head to head</span>
+          <h3>Sport comparison</h3>
+        </div>
+        <button class="btn small" id="clearCompare">Clear</button>
+      </div>
+      <div id="compareContent" class="compare-grid"></div>
+    </section>
+  </section>
+
+  <section id="how" class="how">
+    <span class="eyebrow">The framework</span>
+    <h2>What is IPM?</h2>
+    <p style="color:var(--muted)">
+      Every activity is measured using three independent dimensions.
+      No single score can fully describe athleticism.
+    </p>
+    <div class="how-grid">
+      <div class="how-item">
+        <strong><span class="swatch" style="background:var(--red)"></span>I — Intensity</strong>
+        <p>Physical effort, cardiovascular demand and exertion required to compete.</p>
+      </div>
+      <div class="how-item">
+        <strong><span class="swatch" style="background:var(--green)"></span>P — Precision</strong>
+        <p>How accurately the body must control movement, timing and coordination.</p>
+      </div>
+      <div class="how-item">
+        <strong><span class="swatch" style="background:var(--blue)"></span>M — Movement</strong>
+        <p>The range, frequency and amount of bodily movement involved.</p>
+      </div>
+    </div>
+    <p style="font-size:13px;color:var(--muted);margin-top:22px">
+      IPM scores describe physical demands, not whether a game deserves respect.
+      Starter estimates are not scientific measurements. Community ratings
+      are opinions and may change as more people participate.
+    </p>
+  </section>
+</main>
+
+<footer class="container">
+  <span>© IPM Sports Grading · Built for the debate.</span>
+  <span>Intensity × Precision × Movement</span>
+</footer>
+
+<dialog id="rateDialog">
+  <form id="ratingForm">
+    <div class="dialog-top">
+      <div>
+        <span class="eyebrow">Community grading</span>
+        <h2 id="rateTitle">Rate a sport</h2>
+      </div>
+      <button type="button" class="x" data-close="rateDialog"
+        aria-label="Close">×</button>
+    </div>
+    <p>Score the physical demands, not how much you like the game.
+    Your vote can be updated later on the same browser.</p>
+
+    <div class="rating">
+      <label for="voteI">🔴 Intensity <output id="outI">5</output></label>
+      <input type="range" id="voteI" min="0" max="10" value="5">
+    </div>
+    <div class="rating">
+      <label for="voteP">🟢 Precision <output id="outP">5</output></label>
+      <input type="range" id="voteP" min="0" max="10" value="5">
+    </div>
+    <div class="rating">
+      <label for="voteM">🔵 Movement <output id="outM">5</output></label>
+      <input type="range" id="voteM" min="0" max="10" value="5">
+    </div>
+    <button class="btn primary full" id="voteSubmit" type="submit">Submit IPM Rating</button>
+    <p id="voteNote"></p>
+  </form>
+</dialog>
+
+<dialog id="suggestDialog">
+  <form id="suggestForm">
+    <div class="dialog-top">
+      <div>
+        <span class="eyebrow">Grow the database</span>
+        <h2>Suggest a sport</h2>
+      </div>
+      <button type="button" class="x" data-close="suggestDialog"
+        aria-label="Close">×</button>
+    </div>
+    <p>Suggestions are reviewed before appearing on the site.
+    Don't include personal information.</p>
+    <label class="form-label" for="suggestName">Sport or activity</label>
+    <input class="field full" id="suggestName" minlength="2"
+      maxlength="70" required placeholder="e.g. Table tennis">
+
+    <label class="form-label" for="suggestWhy">Why should it be included?</label>
+    <textarea class="field full" id="suggestWhy" maxlength="350"
+      required placeholder="Describe how the activity is played."></textarea>
+
+    <button class="btn primary full" id="suggestSubmit"
+      type="submit" style="margin-top:20px">Send Suggestion</button>
+    <p id="suggestNote"></p>
+  </form>
+</dialog>
+
+<div class="toast" id="toast" role="status" hidden></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+"use strict";
+
+/* ========================================================
+   IPM CONFIGURATION
+   Replace these TWO values after creating your database.
+   Never paste a secret/service-role key into this file.
+======================================================== */
+const SUPABASE_URL = "YOUR_PROJECT_URL";
+const SUPABASE_KEY = "YOUR_PUBLISHABLE_KEY";
+
+/* Starter estimates (NOT actual community votes) */
+const STARTER = [
+  [1,"soccer","Soccer / Football","Field sports","⚽","Running, ball control and team coordination.",9,8,9],
+  [2,"swimming","Swimming","Endurance","🏊","Full-body movement and sustained cardiovascular effort.",10,8,10],
+  [3,"sprinting","Track Sprinting","Endurance","🏃","Explosive acceleration and maximum-speed running.",10,7,10],
+  [4,"basketball","Basketball","Field sports","🏀","Repeated running, jumping and precise ball handling.",9,9,9],
+  [5,"baseball","Baseball","Field sports","⚾","Explosive bursts, throwing and batting precision.",5,9,6],
+  [6,"golf","Golf","Precision sports","⛳","Controlled swings, aiming and repeated technical execution.",4,10,5],
+  [7,"archery","Archery","Precision sports","🏹","Fine control, stability and consistency.",3,10,3],
+  [8,"motorsport","Motorsport Racing","Motorsport","🏎️","Reflexes, endurance and precise vehicle control.",8,10,6],
+  [9,"beat-saber","Beat Saber Expert+","VR esports","🎵","Fast full-arm movement, rhythm and coordination.",9,9,9],
+  [10,"gorilla-tag","Gorilla Tag","VR esports","🦍","Physical arm locomotion and quick directional movement.",8,8,9],
+  [11,"chess","Chess","Mind sports","♟️","Strategic decisions with minimal physical movement.",1,2,1],
+  [12,"fps","Tactical FPS Esports","Digital esports","🎮","Fine-motor aiming, reactions and tactical decision-making.",2,9,2]
+].map(([id,slug,name,category,icon,description,intensity,precision,movement]) =>
+  ({id,slug,name,category,icon,description,
+    intensity,precision,movement,votes:0}));
+
+const configured =
+  SUPABASE_URL.startsWith("https://") &&
+  SUPABASE_KEY.startsWith("sb_publishable_");
+
+let db = null;
+let live = false;
+let sports = [...STARTER];
+let category = "All";
+let selected = [];
+let activeSport = null;
+let toastTimer;
+
+const $ = id => document.getElementById(id);
+const clamp = n => Math.min(10,Math.max(0,Number(n)||0));
+const format = n => new Intl.NumberFormat().format(n);
+
+function escapeHTML(value) {
+  return String(value).replace(/[&<>"']/g, c =>
+    ({"&":"&amp;","<":"&lt;",">":"&gt;",
+      '"':"&quot;","'":"&#39;"}[c]));
+}
+const avg = s => (Number(s.intensity)+Number(s.precision)+Number(s.movement))/3;
+const color = s => `rgb(${Math.round(clamp(s.intensity)*25.5)},
+  ${Math.round(clamp(s.precision)*25.5)},
+  ${Math.round(clamp(s.movement)*25.5)})`;
+
+function toast(message) {
+  $("toast").textContent = message;
+  $("toast").hidden = false;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=> $("toast").hidden=true,4000);
+}
+
+function banner(message,isLive=false) {
+  $("notice").textContent=message;
+  $("notice").classList.toggle("live",isLive);
+}
+
+function bars(s) {
+  return [
+    ["Intensity",s.intensity,"var(--red)"],
+    ["Precision",s.precision,"var(--green)"],
+    ["Movement",s.movement,"var(--blue)"]
+  ].map(([name,score,tint])=>`
+    <div class="metric">
+      <label>${name}</label>
+      <div class="track">
+        <span style="width:${clamp(score)*10}%;background:${tint}"></span>
+      </div>
+      <b>${Number(score).toFixed(1)}</b>
+    </div>
+  `).join("");
+}
+
+function renderFilters() {
+  const categories=["All",...new Set(sports.map(s=>s.category))];
+  $("filters").innerHTML=categories.map(c=>`
+    <button class="chip ${c===category?"active":""}"
+      data-category="${escapeHTML(c)}"
+      aria-pressed="${c===category}">
+      ${escapeHTML(c)}
+    </button>
+  `).join("");
+}
+
+function renderCards() {
+  const query=$("search").value.trim().toLowerCase();
+  const sort=$("sort").value;
+  let list=sports.filter(s =>
+    (category==="All" || s.category===category) &&
+    `${s.name} ${s.category} ${s.description}`.toLowerCase().includes(query)
+  );
+
+  list.sort((a,b)=>{
+    if(sort==="name") return a.name.localeCompare(b.name);
+    if(sort==="overall") return avg(b)-avg(a);
+    if(["intensity","precision","movement"].includes(sort))
+      return Number(b[sort])-Number(a[sort]);
+    return Number(b.votes)-Number(a.votes) || avg(b)-avg(a);
+  });
+
+  $("empty").hidden=list.length>0;
+
+  $("sportGrid").innerHTML=list.map(s=>{
+    const picked=selected.includes(s.id);
+    return `
+      <article class="sport" style="--sport-color:${color(s)}">
+        <div class="sport-top">
+          <div class="sport-icon" aria-hidden="true">${escapeHTML(s.icon)}</div>
+          <span class="pill">${s.votes>0?"Community graded":"Starter estimate"}</span>
+        </div>
+        <h3>${escapeHTML(s.name)}</h3>
+        <div class="category">${escapeHTML(s.category)}</div>
+        <p class="desc">${escapeHTML(s.description)}</p>
+        ${bars(s)}
+        <div class="card-foot">
+          <span class="count">👥 ${format(s.votes)} rating${s.votes===1?"":"s"}</span>
+          <div class="actions">
+            <button class="btn small ghost" data-action="compare"
+              data-id="${s.id}"
+              aria-pressed="${picked}">${picked?"✓ Added":"Compare"}</button>
+            <button class="btn small primary" data-action="rate"
+              data-id="${s.id}">Rate</button>
+          </div>
+        </div>
+      </article>
+    `;
+  }).join("");
+}
+
+function renderCompare() {
+  const picked=selected.map(id=>sports.find(s=>s.id===id)).filter(Boolean);
+  $("comparePanel").hidden=picked.length===0;
+  $("compareContent").innerHTML=picked.map(s=>`
+    <div class="compare-col">
+      <h4>${escapeHTML(s.icon)} ${escapeHTML(s.name)}</h4>
+      ${bars(s)}
+      <p class="count">${s.votes} community ratings</p>
+    </div>
+  `).join("") +
+  (picked.length===1?`<div class="compare-col">
+    <h4>Pick one more sport</h4>
+    <p class="count">Select Compare on another sport to see them side by side.</p>
+  </div>`:"");
+}
+
+function renderStats() {
+  $("statSports").textContent=format(sports.length);
+  $("statVotes").textContent=format(sports.reduce((n,s)=>n+Number(s.votes),0));
+}
+
+function renderAll() {
+  renderStats();
+  renderFilters();
+  renderCards();
+  renderCompare();
+}
+
+async function loadSports() {
+  if(!db) {
+    live=false;
+    sports=[...STARTER];
+    banner("PREVIEW MODE — These are example starter scores. Connect the free database to activate shared community voting.");
+    renderAll();
+    return;
+  }
+  try {
+    const {data,error}=await db.rpc("get_sport_scores");
+    if(error) throw error;
+    if(!Array.isArray(data)) throw Error("Invalid database response");
+    sports=data.map(s=>({
+      ...s,
+      intensity:Number(s.intensity),
+      precision:Number(s.precision),
+      movement:Number(s.movement),
+      votes:Number(s.votes)
+    }));
+    live=true;
+    banner("● COMMUNITY LIVE — Ratings are shared between visitors. Sports with no votes show starter estimates.",true);
+    renderAll();
+  } catch(err) {
+    live=false;
+    sports=[...STARTER];
+    banner("DATABASE NOT CONNECTED — Showing starter estimates. Check the database setup. " + err.message);
+    renderAll();
+  }
+}
+
+async function currentUser() {
+  if(!db) throw Error("Connect the database first.");
+  const {data:{session},error:sessionError}=await db.auth.getSession();
+  if(sessionError) throw sessionError;
+  if(session?.user) return session.user;
+  const {data,error}=await db.auth.signInAnonymously();
+  if(error) throw error;
+  return data.user;
+}
+
+async function openRating(id) {
+  const s=sports.find(x=>x.id===id);
+  if(!s) return;
+  activeSport=s;
+  $("rateTitle").textContent=s.name;
+  $("voteNote").textContent=live?"One rating per browser account. You can update it.":"Preview only. Connect the database to save votes.";
+
+  const values={voteI:5,voteP:5,voteM:5};
+  if(live) {
+    try {
+      const {data:{session}}=await db.auth.getSession();
+      if(session?.user) {
+        const {data,error}=await db.from("votes")
+          .select("intensity,precision,movement")
+          .eq("sport_id",id).maybeSingle();
+        if(error) throw error;
+        if(data) {
+          values.voteI=data.intensity;
+          values.voteP=data.precision;
+          values.voteM=data.movement;
+        }
+      }
+    } catch(err) {
+      toast("Could not load your earlier rating.");
+    }
+  }
+  for(const [key,value] of Object.entries(values)) $(key).value=value;
+  updateSliders();
+  $("rateDialog").showModal();
+}
+
+function updateSliders() {
+  $("outI").value=$("voteI").value;
+  $("outP").value=$("voteP").value;
+  $("outM").value=$("voteM").value;
+}
+
+function toggleCompare(id) {
+  if(selected.includes(id)) selected=selected.filter(x=>x!==id);
+  else if(selected.length>=2) {
+    toast("Only two sports can be compared at once.");
+    return;
+  } else selected.push(id);
+  renderCards();
+  renderCompare();
+  if(selected.length===2)
+    $("comparePanel").scrollIntoView({behavior:"smooth",block:"nearest"});
+}
+
+async function submitRating(event) {
+  event.preventDefault();
+  if(!live || !activeSport) {
+    toast("Connect Supabase before accepting community votes.");
+    return;
+  }
+  const button=$("voteSubmit");
+  button.disabled=true;
+  button.textContent="Saving rating...";
+  try {
+    const user=await currentUser();
+    const {error}=await db.from("votes").upsert({
+      sport_id:activeSport.id,
+      user_id:user.id,
+      intensity:Number($("voteI").value),
+      precision:Number($("voteP").value),
+      movement:Number($("voteM").value),
+      updated_at:new Date().toISOString()
+    },{onConflict:"sport_id,user_id"});
+    if(error) throw error;
+
+    $("rateDialog").close();
+    toast("Your rating is saved. Thanks for contributing!");
+    await loadSports();
+  } catch(err) {
+    $("voteNote").textContent="Could not save: "+err.message;
+  } finally {
+    button.disabled=false;
+    button.textContent="Submit IPM Rating";
+  }
+}
+
+async function submitSuggestion(event) {
+  event.preventDefault();
+  if(!live) {
+    toast("Connect Supabase before submitting suggestions.");
+    return;
+  }
+  const name=$("suggestName").value.trim();
+  const why=$("suggestWhy").value.trim();
+  if(name.length<2 || why.length<3) {
+    $("suggestNote").textContent="Please enter a name and an explanation.";
+    return;
+  }
+  const button=$("suggestSubmit");
+  button.disabled=true;
+  button.textContent="Sending...";
+  try {
+    const user=await currentUser();
+    const {error}=await db.from("suggestions").insert({
+      user_id:user.id,name,reason:why
+    });
+    if(error) throw error;
+    $("suggestDialog").close();
+    $("suggestForm").reset();
+    toast("Suggestion received! It will need approval before appearing.");
+  } catch(err) {
+    $("suggestNote").textContent="Could not submit: "+err.message;
+  } finally {
+    button.disabled=false;
+    button.textContent="Send Suggestion";
+  }
+}
+
+/* Interface events */
+$("search").addEventListener("input",renderCards);
+$("sort").addEventListener("change",renderCards);
+$("refresh").addEventListener("click",loadSports);
+$("clearCompare").addEventListener("click",()=>{
+  selected=[];
+  renderCards();
+  renderCompare();
+});
+$("filters").addEventListener("click",e=>{
+  const chip=e.target.closest("[data-category]");
+  if(!chip) return;
+  category=chip.dataset.category;
+  renderFilters();
+  renderCards();
+});
+$("sportGrid").addEventListener("click",e=>{
+  const button=e.target.closest("[data-action]");
+  if(!button) return;
+  const id=Number(button.dataset.id);
+  if(button.dataset.action==="rate") openRating(id);
+  if(button.dataset.action==="compare") toggleCompare(id);
+});
+$("suggestTop").addEventListener("click",()=>$("suggestDialog").showModal());
+document.querySelectorAll("[data-close]").forEach(b=>
+  b.addEventListener("click",() => $(b.dataset.close).close()));
+["voteI","voteP","voteM"].forEach(id =>
+  $(id).addEventListener("input",updateSliders));
+$("ratingForm").addEventListener("submit",submitRating);
+$("suggestForm").addEventListener("submit",submitSuggestion);
+
+if(configured && window.supabase) {
+  db=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+}
+loadSports();
+</script>
 </body>
 </html>
