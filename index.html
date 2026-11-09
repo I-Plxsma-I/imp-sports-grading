@@ -142,7 +142,12 @@ h1 em {
   margin-bottom:30px;
 }
 .notice.live { border-color:#286d5b;background:#103c3266;color:#a2f4d6; }
-.stats { display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:70px; }
+.stats {
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:14px;
+  margin-bottom:70px;
+}
 .stat {
   background:linear-gradient(135deg,#1b2639,#111826);
   padding:23px;border:1px solid var(--line);border-radius:17px;
@@ -265,7 +270,7 @@ textarea { min-height:95px;resize:vertical; }
   .hero-art { min-height:270px; }
   .sport-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
 }
-@media(max-width:600px) {
+@media(max-width:600px) {.stats { grid-template-columns:repeat(2,1fr); }
   .links a { display:none; }
   .container { padding:0 15px; }
   h1 { letter-spacing:-2.5px; }
@@ -329,6 +334,7 @@ textarea { min-height:95px;resize:vertical; }
     <div class="stat"><strong id="statSports">0</strong><span>Rated sports</span></div>
     <div class="stat"><strong id="statVotes">0</strong><span>Community ratings</span></div>
     <div class="stat"><strong>3</strong><span>IPM dimensions</span></div>
+    <div class="stat"><strong id="statVisitors">—</strong><span>Unique visitors</span></div>
   </section>
 
   <section id="explore">
@@ -821,7 +827,38 @@ $("suggestForm").addEventListener("submit",submitSuggestion);
 if(configured && window.supabase) {
   db=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 }
+
+async function updateVisitors() {
+  if (!db) return;
+
+  try {
+    const user = await currentUser();
+
+    const { error: visitError } = await db
+      .from("site_visitors")
+      .upsert(
+        { user_id: user.id },
+        {
+          onConflict: "user_id",
+          ignoreDuplicates: true
+        }
+      );
+
+    if (visitError) throw visitError;
+
+    const { data, error } =
+      await db.rpc("get_visitor_count");
+
+    if (error) throw error;
+
+    $("statVisitors").textContent =
+      format(Number(data));
+  } catch (error) {
+    console.error("Visitor counter:", error);
+  }
+}
 loadSports();
+updateVisitors();
 </script>
 </body>
 </html>
