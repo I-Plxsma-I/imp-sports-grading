@@ -451,6 +451,27 @@ textarea { min-height:95px;resize:vertical; }
 .ipm-form { display:grid;gap:12px;margin:18px 0; }
 .ipm-form textarea { min-height:100px; }
   
+/* Bigger, clearer send button */
+.ipm-send.btn.primary {
+  position: absolute;
+  right: 12px;
+  bottom: 12px;
+  width: 48px;
+  height: 48px;
+  padding: 0;
+  border-radius: 50%;
+  border: 2px solid #9affdf;
+  background: #35cba5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 3px 14px #35cba566;
+}
+
+.ipm-send.btn.primary:hover {
+  background: #20b994;
+}
+
 /* iMessage-style comment composer */
 .ipm-composer {
   position: relative;
@@ -460,7 +481,7 @@ textarea { min-height:95px;resize:vertical; }
 .ipm-composer textarea {
   display: block;
   width: 100%;
-  padding-right: 65px;
+  padding-right: 75px;
   padding-bottom: 18px;
   border-radius: 20px;
 }
@@ -590,15 +611,16 @@ textarea { min-height:95px;resize:vertical; }
       required maxlength="1000"
       placeholder="Write a comment..."></textarea>
 
-    <button type="submit"
-      class="btn primary ipm-send"
-      aria-label="Send comment"
-title="Send comment">
-  <svg width="28" height="28" viewBox="0 0 24 24"
-       fill="none" stroke="white" stroke-width="3"
+   
+<button type="submit"
+  class="btn primary ipm-send"
+  aria-label="Send comment"
+  title="Send comment">
+  <svg width="32" height="32" viewBox="0 0 24 24"
+       fill="none" stroke="#ffffff" stroke-width="3.5"
        stroke-linecap="round" stroke-linejoin="round"
        aria-hidden="true">
-    <path d="M12 19V5M5 12l7-7 7 7"/>
+    <path d="M12 20V4M4 12l8-8 8 8"/>
   </svg>
 </button>  </div>
 </form>  
