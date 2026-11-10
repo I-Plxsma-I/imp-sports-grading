@@ -302,6 +302,7 @@ textarea { min-height:95px;resize:vertical; }
     <div class="links">
       <a href="#explore">Explore</a>
       <a href="#how">The Scale</a>
+      <a href="#ipmForum">Discussions</a>
       <button class="btn primary small" id="suggestTop">+ Suggest Sport</button>
     </div>
   </nav>
@@ -408,6 +409,456 @@ textarea { min-height:95px;resize:vertical; }
     </p>
   </section>
 </main>
+
+<!-- IPM COMMUNITY DISCUSSIONS -->
+<style>
+#ipmForum { scroll-margin-top:100px; }
+.ipm-panel {
+  background:#121a29;
+  border:1px solid #2a3548;
+  border-radius:22px;
+  padding:25px;
+  margin:20px 0 65px;
+}
+.ipm-entry {
+  padding:18px;
+  background:#1a2639;
+  border:1px solid #344155;
+  border-radius:13px;
+  margin:12px 0;
+}
+.ipm-thread {
+  display:block;
+  width:100%;
+  text-align:left;
+  color:#eef4ff;
+  cursor:pointer;
+}
+.ipm-thread:hover { border-color:#5de6c4; }
+.ipm-small {
+  color:#98a8bf;
+  font-size:12px;
+  margin:5px 0;
+}
+.ipm-text {
+  white-space:pre-wrap;
+  overflow-wrap:anywhere;
+}
+.ipm-reply {
+  border-left:3px solid #5de6c4;
+  margin-left:15px;
+}
+.ipm-form { display:grid;gap:12px;margin:18px 0; }
+.ipm-form textarea { min-height:100px; }
+.ipm-actions { display:flex;gap:9px;flex-wrap:wrap; }
+#ipmForum h2 { font-size:clamp(28px,4vw,40px); }
+#ipmForum h3 { overflow-wrap:anywhere; }
+</style>
+
+<section id="ipmForum" class="container">
+  <div class="ipm-panel">
+    <span class="eyebrow">IPM Community</span>
+    <h2>💬 The Discussion Arena</h2>
+    <p class="ipm-small">
+      Create discussions, ask questions and debate athleticism.
+      Be respectful. Posts can be reported.
+    </p>
+
+    <label class="form-label" for="ipmAlias">
+      Display name (optional)
+    </label>
+    <input id="ipmAlias" class="field full"
+      maxlength="24" placeholder="Anonymous">
+    <p class="ipm-small">
+      Display names aren't verified or reserved.
+      Don't use your real name or personal information.
+    </p>
+
+    <label class="form-label" for="ipmSport">
+      Choose a sport
+    </label>
+    <select id="ipmSport" class="field full">
+      <option>Loading sports...</option>
+    </select>
+
+    <p id="ipmStatus" class="ipm-small" role="status"></p>
+
+    <div id="ipmListPane">
+      <div class="ipm-actions">
+        <button class="btn primary" id="ipmNewBtn">
+          + New Discussion
+        </button>
+        <button class="btn" id="ipmRefresh">
+          Refresh
+        </button>
+      </div>
+
+      <form id="ipmNewForm" class="ipm-form" hidden>
+        <input id="ipmTitle" class="field full"
+          placeholder="Discussion title"
+          minlength="5" maxlength="120" required>
+        <textarea id="ipmBody" class="field full"
+          maxlength="2000" required
+          placeholder="What's your argument or question?"></textarea>
+        <div class="ipm-actions">
+          <button class="btn primary" type="submit">
+            Publish Discussion
+          </button>
+          <button class="btn" type="button"
+            id="ipmCancelNew">Cancel</button>
+        </div>
+      </form>
+
+      <div id="ipmThreads"></div>
+    </div>
+
+    <div id="ipmThreadPane" hidden>
+      <button class="btn" id="ipmBack">
+        ← All Discussions
+      </button>
+      <div class="ipm-entry">
+        <h3 id="ipmThreadTitle"></h3>
+        <p id="ipmThreadMeta" class="ipm-small"></p>
+        <p id="ipmThreadBody" class="ipm-text"></p>
+        <button class="btn small ghost" id="ipmReportThread">
+          Report Discussion
+        </button>
+      </div>
+
+      <h3>Replies</h3>
+      <div id="ipmComments"></div>
+
+      <div id="ipmReplyNotice" class="ipm-small" hidden>
+        Replying to a comment
+        <button class="btn small" id="ipmCancelReply">
+          Cancel reply
+        </button>
+      </div>
+
+      <form id="ipmCommentForm" class="ipm-form">
+        <textarea id="ipmCommentBody"
+          class="field full" required maxlength="1000"
+          placeholder="Write a comment..."></textarea>
+        <button class="btn primary" type="submit">
+          Post Comment
+        </button>
+      </form>
+    </div>
+  </div>
+</section>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  const el = id => document.getElementById(id);
+  let threads = [];
+  let activeThread = null;
+  let replyParent = null;
+
+  const safe = value => escapeHTML(value ?? "");
+  const date = value =>
+    new Date(value).toLocaleDateString();
+
+  function status(message) {
+    el("ipmStatus").textContent = message;
+  }
+
+  function errorMessage(error) {
+    console.error("IPM discussion error:", error);
+    status("Error: " + (error.message || String(error)));
+  }
+
+  function alias() {
+    const name = el("ipmAlias").value.trim();
+    if (name && !/^[a-zA-Z0-9_ -]{2,24}$/.test(name)) {
+      throw Error(
+        "Display names need 2-24 letters, numbers, spaces, - or _."
+      );
+    }
+    try {
+      localStorage.setItem("ipm_alias", name);
+    } catch (_) {}
+    return name || "Anonymous";
+  }
+
+  try {
+    el("ipmAlias").value =
+      localStorage.getItem("ipm_alias") || "";
+  } catch (_) {}
+
+  async function loadSportsForForum() {
+    try {
+      if (!db) throw Error("Supabase is not connected.");
+
+      const {data,error} = await db
+        .from("sports")
+        .select("id,name")
+        .order("name");
+
+      if (error) throw error;
+
+      el("ipmSport").innerHTML = (data || [])
+        .map(s =>
+          `<option value="${Number(s.id)}">${safe(s.name)}</option>`
+        ).join("");
+
+      if (data && data.length) await loadThreads();
+    } catch (err) {
+      errorMessage(err);
+    }
+  }
+
+  async function loadThreads() {
+    if (!db || !el("ipmSport").value) return;
+
+    activeThread = null;
+    el("ipmListPane").hidden = false;
+    el("ipmThreadPane").hidden = true;
+    el("ipmThreads").textContent = "Loading discussions...";
+
+    try {
+      const {data,error} = await db
+        .from("ipm_threads")
+        .select("id,title,body,display_name,created_at")
+        .eq("sport_id", Number(el("ipmSport").value))
+        .order("created_at",{ascending:false})
+        .limit(50);
+
+      if (error) throw error;
+
+      threads = data || [];
+
+      el("ipmThreads").innerHTML = threads.length
+        ? threads.map(t => `
+          <button class="ipm-entry ipm-thread"
+            data-thread="${Number(t.id)}">
+            <strong>${safe(t.title)}</strong>
+            <div class="ipm-small">
+              ${safe(t.display_name)} · ${date(t.created_at)}
+            </div>
+            <div class="ipm-small">
+              Open discussion →
+            </div>
+          </button>
+        `).join("")
+        : `<p class="ipm-small">
+            No discussions yet. Start the first one!
+           </p>`;
+
+      status("Showing the 50 newest discussions.");
+    } catch (err) {
+      errorMessage(err);
+    }
+  }
+
+  async function openThread(id) {
+    activeThread = threads.find(t => Number(t.id) === id);
+    if (!activeThread) return;
+
+    replyParent = null;
+    el("ipmReplyNotice").hidden = true;
+    el("ipmListPane").hidden = true;
+    el("ipmThreadPane").hidden = false;
+
+    el("ipmThreadTitle").textContent = activeThread.title;
+    el("ipmThreadMeta").textContent =
+      activeThread.display_name + " · " +
+      date(activeThread.created_at);
+    el("ipmThreadBody").textContent = activeThread.body;
+
+    await loadComments();
+  }
+
+  async function loadComments() {
+    if (!activeThread) return;
+    el("ipmComments").textContent = "Loading replies...";
+
+    try {
+      const {data,error} = await db
+        .from("ipm_comments")
+        .select("id,parent_id,body,display_name,created_at")
+        .eq("thread_id",activeThread.id)
+        .order("created_at",{ascending:true})
+        .limit(200);
+
+      if (error) throw error;
+
+      const comments = data || [];
+      const known = new Map(comments.map(c => [c.id,c]));
+      const children = new Map();
+
+      for (const c of comments) {
+        const parent = c.parent_id && known.has(c.parent_id)
+          ? c.parent_id : 0;
+        if (!children.has(parent)) children.set(parent,[]);
+        children.get(parent).push(c);
+      }
+
+      function renderComment(c, depth=0) {
+        return `
+          <article class="ipm-entry ${depth ? "ipm-reply" : ""}">
+            <strong>${safe(c.display_name)}</strong>
+            <div class="ipm-small">${date(c.created_at)}</div>
+            <p class="ipm-text">${safe(c.body)}</p>
+            <div class="ipm-actions">
+              <button class="btn small" data-reply="${c.id}">
+                Reply
+              </button>
+              <button class="btn small ghost"
+                data-report-comment="${c.id}">
+                Report
+              </button>
+            </div>
+            ${(children.get(c.id)||[])
+              .map(child => renderComment(child,depth+1))
+              .join("")}
+          </article>`;
+      }
+
+      el("ipmComments").innerHTML = comments.length
+        ? (children.get(0)||[])
+            .map(c => renderComment(c)).join("")
+        : `<p class="ipm-small">No replies yet.</p>`;
+
+    } catch (err) {
+      errorMessage(err);
+    }
+  }
+
+  async function createThread(event) {
+    event.preventDefault();
+
+    try {
+      const user = await currentUser();
+
+      const {error} = await db.from("ipm_threads").insert({
+        sport_id:Number(el("ipmSport").value),
+        author_id:user.id,
+        display_name:alias(),
+        title:el("ipmTitle").value.trim(),
+        body:el("ipmBody").value.trim()
+      });
+
+      if (error) throw error;
+
+      el("ipmNewForm").reset();
+      el("ipmNewForm").hidden = true;
+      await loadThreads();
+      status("Discussion published!");
+    } catch (err) {
+      errorMessage(err);
+    }
+  }
+
+  async function createComment(event) {
+    event.preventDefault();
+    if (!activeThread) return;
+
+    try {
+      const user = await currentUser();
+
+      const {error} = await db.from("ipm_comments").insert({
+        thread_id:activeThread.id,
+        parent_id:replyParent,
+        author_id:user.id,
+        display_name:alias(),
+        body:el("ipmCommentBody").value.trim()
+      });
+
+      if (error) throw error;
+
+      el("ipmCommentForm").reset();
+      replyParent = null;
+      el("ipmReplyNotice").hidden = true;
+      await loadComments();
+      status("Reply posted!");
+    } catch (err) {
+      errorMessage(err);
+    }
+  }
+
+  async function reportContent(kind,id) {
+    const reason = prompt(
+      "Why are you reporting this? (5-250 characters)"
+    );
+    if (reason === null) return;
+    if (reason.trim().length < 5 ||
+        reason.trim().length > 250) {
+      status("Report reason must be 5-250 characters.");
+      return;
+    }
+
+    try {
+      const user = await currentUser();
+      const payload = {
+        reporter_id:user.id,
+        reason:reason.trim(),
+        thread_id:kind==="thread" ? id : null,
+        comment_id:kind==="comment" ? id : null
+      };
+
+      const {error} = await db
+        .from("ipm_reports").insert(payload);
+
+      if (error) throw error;
+      status("Report submitted for moderator review.");
+    } catch (err) {
+      errorMessage(err);
+    }
+  }
+
+  el("ipmSport").addEventListener("change",loadThreads);
+  el("ipmRefresh").addEventListener("click",loadThreads);
+
+  el("ipmNewBtn").addEventListener("click",() => {
+    el("ipmNewForm").hidden = false;
+    el("ipmTitle").focus();
+  });
+
+  el("ipmCancelNew").addEventListener("click",() => {
+    el("ipmNewForm").hidden = true;
+  });
+
+  el("ipmNewForm").addEventListener("submit",createThread);
+  el("ipmCommentForm").addEventListener("submit",createComment);
+
+  el("ipmThreads").addEventListener("click",event => {
+    const button = event.target.closest("[data-thread]");
+    if (button) openThread(Number(button.dataset.thread));
+  });
+
+  el("ipmBack").addEventListener("click",loadThreads);
+
+  el("ipmReportThread").addEventListener("click",() => {
+    if (activeThread)
+      reportContent("thread",activeThread.id);
+  });
+
+  el("ipmComments").addEventListener("click",event => {
+    const button = event.target.closest("button");
+    if (!button) return;
+
+    if (button.hasAttribute("data-reply")) {
+      replyParent = Number(button.dataset.reply);
+      el("ipmReplyNotice").hidden = false;
+      el("ipmCommentBody").focus();
+    }
+
+    if (button.hasAttribute("data-report-comment")) {
+      reportContent(
+        "comment",
+        Number(button.dataset.reportComment)
+      );
+    }
+  });
+
+  el("ipmCancelReply").addEventListener("click",() => {
+    replyParent = null;
+    el("ipmReplyNotice").hidden = true;
+  });
+
+  loadSportsForForum();
+});
+</script>
 
 <footer class="container">
   <span>© IPM Sports Grading · Built for the debate.</span>
