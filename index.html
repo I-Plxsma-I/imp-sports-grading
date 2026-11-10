@@ -613,7 +613,6 @@ document.addEventListener("DOMContentLoaded", () => {
     activeThread = null;
     el("ipmListPane").hidden = false;
     el("ipmThreadPane").hidden = true;
-    el("ipmThreads").textContent = "Loading discussions...";
 
     try {
       const {data,error} = await db
@@ -670,7 +669,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
   async function loadComments() {
     if (!activeThread) return;
-    el("ipmComments").textContent = "Loading replies...";
 
     try {
       const {data,error} = await db
