@@ -670,8 +670,8 @@ document.addEventListener("DOMContentLoaded", () => {
   async function loadComments() {
     if (!activeThread) return;
 const nearBottom =
-  window.innerHeight + window.scrollY >=
-  document.documentElement.scrollHeight - 250;
+  el("ipmCommentForm").getBoundingClientRect().top
+  <= window.innerHeight + 250;
     try {
       const {data,error} = await db
         .from("ipm_comments")
@@ -720,9 +720,9 @@ const nearBottom =
         : `<p class="ipm-small">No replies yet.</p>`;
 if (nearBottom) {
   requestAnimationFrame(() => {
-    window.scrollTo({
-      top: document.documentElement.scrollHeight,
-      behavior: "smooth"
+    el("ipmCommentForm").scrollIntoView({
+      behavior: "smooth",
+      block: "end"
     });
   });
 }
@@ -779,9 +779,9 @@ if (nearBottom) {
 await loadComments();
 
 requestAnimationFrame(() => {
-  window.scrollTo({
-    top: document.documentElement.scrollHeight,
-    behavior: "smooth"
+  el("ipmCommentForm").scrollIntoView({
+    behavior: "smooth",
+    block: "end"
   });
 });
 
@@ -923,7 +923,21 @@ if (db) {
     }
   });
 }
+// Enter sends a comment; Shift + Enter adds a new line.
+el("ipmCommentBody").addEventListener("keydown", event => {
+  if (
+    event.key === "Enter" &&
+    !event.shiftKey &&
+    !event.isComposing &&
+    !event.repeat
+  ) {
+    event.preventDefault();
 
+    if (event.target.value.trim()) {
+      el("ipmCommentForm").requestSubmit();
+    }
+  }
+});
   loadSportsForForum();
 });
 </script>
