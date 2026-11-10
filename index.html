@@ -669,7 +669,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
   async function loadComments() {
     if (!activeThread) return;
-
+const nearBottom =
+  window.innerHeight + window.scrollY >=
+  document.documentElement.scrollHeight - 250;
     try {
       const {data,error} = await db
         .from("ipm_comments")
@@ -716,7 +718,14 @@ document.addEventListener("DOMContentLoaded", () => {
         ? (children.get(0)||[])
             .map(c => renderComment(c)).join("")
         : `<p class="ipm-small">No replies yet.</p>`;
-
+if (nearBottom) {
+  requestAnimationFrame(() => {
+    window.scrollTo({
+      top: document.documentElement.scrollHeight,
+      behavior: "smooth"
+    });
+  });
+}
     } catch (err) {
       errorMessage(err);
     }
@@ -767,9 +776,16 @@ document.addEventListener("DOMContentLoaded", () => {
       el("ipmCommentForm").reset();
       replyParent = null;
       el("ipmReplyNotice").hidden = true;
-      await loadComments();
-      status("Reply posted!");
-    } catch (err) {
+await loadComments();
+
+requestAnimationFrame(() => {
+  window.scrollTo({
+    top: document.documentElement.scrollHeight,
+    behavior: "smooth"
+  });
+});
+
+status("Reply posted!");    } catch (err) {
       errorMessage(err);
     }
   }
