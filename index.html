@@ -856,6 +856,60 @@ document.addEventListener("DOMContentLoaded", () => {
     el("ipmReplyNotice").hidden = true;
   });
 
+/* IPM LIVE DISCUSSION UPDATES */
+
+if (db) {
+  const liveForum = db
+    .channel("ipm-live-forum")
+
+    // New discussion posted
+    .on("postgres_changes", {
+      event: "INSERT",
+      schema: "public",
+      table: "ipm_threads"
+    }, payload => {
+      const sport = Number(el("ipmSport").value);
+
+      if (!activeThread &&
+          Number(payload.new.sport_id) === sport) {
+        loadThreads();
+      }
+    })
+
+    // New comment posted
+    .on("postgres_changes", {
+      event: "INSERT",
+      schema: "public",
+      table: "ipm_comments"
+    }, payload => {
+      if (activeThread &&
+          Number(payload.new.thread_id) ===
+          Number(activeThread.id)) {
+        loadComments();
+      }
+    })
+
+    .subscribe(status => {
+      console.log("IPM Realtime:", status);
+
+      if (status === "CHANNEL_ERROR" ||
+          status === "TIMED_OUT") {
+        console.warn("Realtime connection problem");
+      }
+    });
+
+  // Catch up when switching back to this tab
+  document.addEventListener("visibilitychange", () => {
+    if (!document.hidden) {
+      if (activeThread) {
+        loadComments();
+      } else {
+        loadThreads();
+      }
+    }
+  });
+}
+
   loadSportsForForum();
 });
 </script>
